@@ -1,0 +1,217 @@
+inverse and color
+
+package labsix;
+
+import java.io.File;
+import java.io.IOException;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+
+public class InverseAndColor {
+    public static void main(String[] args) throws IOException {
+        File f1 = new File("D:\\Java Programs\\DigitalImageProcessingLab\\src\\labsix\\assets\\ghar.jpg");
+        BufferedImage img = ImageIO.read(f1); //red
+        BufferedImage img2 = ImageIO.read(f1);  //blue
+        int width = img.getWidth();
+        int height = img.getHeight();
+        for (int i = 0; i < height; i++) {
+            for (int j = width - 1, k = 0; j >= 0; j--, k++) {
+                int pixel = img.getRGB(j, i);
+                img.setRGB(k, i, pixel);
+            }
+        }
+        for (int i = height - 1, k = 0; i >= height / 2; i--, k++) {
+            for (int j = 0; j < width; j++) {
+                int p = img2.getRGB(j, i);
+                img2.setRGB(j, k, p);
+            }
+        }
+
+        for (int i = 0; i < height; i++) {
+            for (int j = width / 2; j < width; j++) {
+                int pixel = img.getRGB(j, i);
+                int alpha = (pixel >> 24) & 0xff, red = (pixel >> 16) & 0xff, green = (pixel >> 8) & 0xff, blue = (pixel) & 0xff;
+                red = 255 - red;
+                pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                img.setRGB(j, i, pixel);
+            }
+        }
+
+        for (int i = 0; i < height / 2; i++) {
+            for (int j = 0; j < width; j++) {
+                int pixel = img2.getRGB(j, i);
+                int alpha = (pixel >> 24) & 0xff, red = (pixel >> 16) & 0xff, green = (pixel >> 8) & 0xff, blue = (pixel) & 0xff;
+                blue = 255 - blue;
+                pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                img2.setRGB(j, i, pixel);
+            }
+        }
+        File f2 = new File("D:\\Java Programs\\DigitalImageProcessingLab\\src\\labsix\\assets\\ghar-trans.jpg");
+        ImageIO.write(img, "jpg", f2);
+
+        File f3 = new File("D:\\Java Programs\\DigitalImageProcessingLab\\src\\labsix\\assets\\ghar-trans-2.jpg");
+        ImageIO.write(img2, "jpg", f3);
+    }
+}
+
+All 3
+
+package labseven;
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+public class Final {
+    static {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
+
+    public static void main(String[] args) {
+        String file = "D:\\Java Programs\\DigitalImageProcessingLab\\src\\labseven\\assets\\KAVIRAJ_SINGH_BHATI-JIETCS19107.jpg";
+        translation(file);
+        rotation(file);
+        scaling(file);
+    }
+
+    static void translation(String file) {
+        Mat src = Imgcodecs.imread(file);
+        Mat dst = new Mat();
+        Point p1 = new Point(0.0, 0.0);
+        Point p2 = new Point( src.cols() - 1, 0 );
+        Point p3 = new Point( 0, src.rows() - 1 );
+        Point p4 = new Point( src.cols()*0.0, src.rows()*1.33 );
+        Point p5 = new Point( src.cols()*1.85, src.rows()*0.25 );
+        Point p6 = new Point( src.cols()*0.15, src.rows()*0.7 );
+        MatOfPoint2f ma1 = new MatOfPoint2f(p1,p2,p3);
+        MatOfPoint2f ma2 = new MatOfPoint2f(p4,p5,p6);
+
+        // Creating the transformation matrix
+
+        Mat transformMatrix = Imgproc.getAffineTransform(ma1,ma2);
+
+        Size size = new Size(src.cols(), src.cols());
+
+        // Applying Wrap Affine
+        Imgproc.warpAffine(src, dst, transformMatrix, size);
+        Imgcodecs.imwrite("D:\\Java Programs\\DigitalImageProcessingLab\\src\\labseven\\assets\\translation.jpg", dst);
+        System.out.println("Image Processed");
+    }
+
+    static void rotation(String file) {
+        Mat src = Imgcodecs.imread(file);
+
+        // Creating an empty matrix to store the result
+        Mat dst = new Mat();
+
+        // Creating a Point object
+        Point point = new Point(100, 120);
+
+        // Creating the transformation matrix M
+        Mat rotationMatrix = Imgproc.getRotationMatrix2D(point, 65, 0.5);
+
+        // Creating the object of the class Size
+        Size size = new Size(src.cols(), src.cols());
+
+        // Rotating the given image
+        Imgproc.warpAffine(src, dst, rotationMatrix, size);
+
+        String file2="D:\\Java Programs\\DigitalImageProcessingLab\\src\\labseven\\assets\\rotation.jpg";
+
+        // Writing the image
+        Imgcodecs.imwrite(file2, dst);
+        System.out.println("Image Processed");
+    }
+
+    static void scaling(String file) {
+        Mat src = Imgcodecs.imread(file);
+
+        // Creating an empty matrix to store the result
+        Mat dst = new Mat();
+
+        // Creating the Size object
+        Size size = new Size(src.rows()*0.5, src.rows()*0.5);
+
+        // Scaling the Image
+        Imgproc.resize(src, dst, size, 0, 0, Imgproc.INTER_AREA);
+
+        String file2= "D:\\Java Programs\\DigitalImageProcessingLab\\src\\labseven\\assets\\scaling.jpg";
+
+        // Writing the image
+        Imgcodecs.imwrite(file2, dst);
+        System.out.println("Image Processed");
+    }
+}
+
+
+Write on image
+
+package labeight;
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+public class WriteOnImage {
+    static {System.loadLibrary(Core.NATIVE_LIBRARY_NAME);}
+
+    public static void main(String[] args) {
+        Imgcodecs im = new Imgcodecs();
+        String file = "D:\\Java Programs\\DigitalImageProcessingLab\\src\\labeight\\assets\\ghar.jpg";
+        Mat src = im.imread(file);
+        System.out.println("Image loaded");
+
+        Scalar color = new Scalar(250, 255, 0);
+        Scalar color1 = new Scalar(10, 205, 1);
+
+        // drawing a circle
+
+        Imgproc.circle(src, new Point(2304, 864), 100, color1, 10);
+
+        // drawing a line
+
+        Imgproc.line(src, new Point(2304, 960), new Point(576, 1728), color1, 10);
+
+        Imgproc.line(src, new Point(2304, 960), new Point(4032, 1728), color1, 10);
+
+        Imgproc.line(src, new Point(576, 1728), new Point(4032, 1728), color1, 10);
+
+        // drawing text
+
+        Imgproc.putText(src, "Dept.", new Point(2140, 1200), Core.FONT_HERSHEY_COMPLEX, 4, new Scalar(0, 0, 0), 10);
+
+        Imgproc.putText(src, "of", new Point(2240, 1350), Core.FONT_HERSHEY_COMPLEX, 4, new Scalar(0, 0, 0), 10);
+
+        Imgproc.putText(src, "Computer Science", new Point(1750, 1500), Core.FONT_HERSHEY_COMPLEX, 4, new Scalar(0, 0, 0), 10);
+
+        // rectangle
+
+        Imgproc.line(src, new Point(576, 1728), new Point(576, 3000), color1, 10);
+
+        Imgproc.line(src, new Point(4032, 1728), new Point(4032, 3000), color1, 10);
+
+        Imgproc.line(src, new Point(576, 3000), new Point(4032, 3000), color1, 10);
+
+        // drawing ellipse
+
+        Imgproc.ellipse(src, new RotatedRect(new Point(1800, 2361), new Size(600, 1300), 90), color1, 10);
+
+        // text
+
+        Imgproc.putText(src, "Name :- Kaviraj", new Point(1350, 2300), Core.FONT_HERSHEY_COMPLEX, 2, color, 7);
+
+        Imgproc.putText(src, "Roll No :- 078", new Point(1350, 2490), Core.FONT_HERSHEY_COMPLEX, 2, color, 7);
+
+        String file2 = "D:\\Java Programs\\DigitalImageProcessingLab\\src\\labeight\\assets\\ghar-alpha.jpg";
+        im.imwrite(file2, src);
+    }
+}
